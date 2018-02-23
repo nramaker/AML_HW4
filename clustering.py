@@ -2,10 +2,10 @@
 import numpy as np
 import pandas as pd
 from scipy.cluster.hierarchy import dendrogram, linkage
-from matplotlib import pyplot as plt
-from scipy.spatial import distance
-from scipy.spatial.distance import pdist
 from sklearn.metrics import euclidean_distances
+from sklearn.cluster import KMeans
+
+from matplotlib import pyplot as plt
 
 def load_data(file):
     print("Loading samples from file: {}".format(file))
@@ -18,7 +18,6 @@ def load_data(file):
     return vectors, countries
 
 def cluster_and_plot(vectors, labels, description, link_type='average',):
-    #X = [[i] for i in vectors]
     X = euclidean_distances(vectors)
     Z = linkage(X, method=link_type)
     fig = plt.figure(figsize=(12, 8))
@@ -26,7 +25,7 @@ def cluster_and_plot(vectors, labels, description, link_type='average',):
     plt.title(description)
     plt.show()
     
-def task1():
+def agg_clustering():
     print("")
     print("### Task1")
     print("### Loading Data ...")
@@ -41,8 +40,30 @@ def task1():
     print("### Producing Clusters with Complete Link")
     cluster_and_plot(vectors, countries, link_type='complete', description="Complete Link")
 
-def task2():
-    pass
+def k_means(k=3):
+    print("### Task2")
+    print("### Loading Data ...")
+    vectors, countries = load_data('data.csv')
+
+    ks = []
+    distances = []
+    for i in range(2, len(countries)):
+        kmeans = KMeans(n_clusters=i, random_state=0).fit(vectors)
+        ks.append(i)
+        distances.append(kmeans.inertia_/len(countries))
+        # df = pd.DataFrame()
+        # df['countries'] = countries
+        # df['labels'] = kmeans.labels_
+        # print(df)
+    
+    plt.figure(1)
+    
+    plt.plot(ks,distances, marker='o')
+        
+    plt.title('Average Distance from Centroids for k Clusters')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 def task3():
     pass
@@ -50,6 +71,6 @@ def task3():
 #main entry
 if __name__ == "__main__":
     print(" ##### AML HW4 Clusterererer  ##### ")
-    task1()
-    task2()
+    # agg_clustering()
+    k_means()
     task3()

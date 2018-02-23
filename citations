@@ -4,3 +4,4 @@ linkage in scipy - https://docs.scipy.org/doc/scipy/reference/generated/scipy.cl
 https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogram-tutorial/
 euclian distance scipy - https://stackoverflow.com/questions/1401712/how-can-the-euclidean-distance-be-calculated-with-numpy
 calculating disimilarity matrix - https://stackoverflow.com/questions/35758612/most-efficient-way-to-construct-similarity-matrix
+kmeans - http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
