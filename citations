@@ -5,3 +5,22 @@ https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogra
 euclian distance scipy - https://stackoverflow.com/questions/1401712/how-can-the-euclidean-distance-be-calculated-with-numpy
 calculating disimilarity matrix - https://stackoverflow.com/questions/35758612/most-efficient-way-to-construct-similarity-matrix
 kmeans - http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
+getting list of files in a directory - https://stackoverflow.com/questions/3207219/how-do-i-list-all-files-of-a-directory
+get from text file with numpy- https://stackoverflow.com/questions/3518778/how-to-read-csv-into-record-array-in-numpy
+
+Part 3 assignment - Obtain the activities of daily life dataset from the UC Irvine machine learning
+website (https://archive.ics.uci.edu/ml/datasets/Dataset+for+ADL+Recognition+with+Wrist-worn+Accelerometer
+data provided by Barbara Bruno, Fulvio Mastrogiovanni and Antonio Sgorbissa).
+(a) Build a classifier that classifies sequences into one of the 14 activities provided.
+To make features, you should vector quantize, then use a histogram
+of cluster centers (as described in the subsection; this gives a pretty explicit
+set of steps to follow). You will find it helpful to use hierarchical
+k-means to vector quantize. You may use whatever multi-class classifier
+you wish, though I’d start with R’s decision forest, because it’s easy to
+use and effective. You should report (a) the total error rate and (b) the
+class confusion matrix of your classifier.
+(b) Now see if you can improve your classifier by (a) modifying the number
+of cluster centers in your hierarchical k-means and (b) modifying the size
+of the fixed length samples that you use.
+
+http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html

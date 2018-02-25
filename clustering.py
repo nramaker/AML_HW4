@@ -1,6 +1,8 @@
 
 import numpy as np
+from numpy import genfromtxt
 import pandas as pd
+import os
 from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.metrics import euclidean_distances
 from sklearn.cluster import KMeans
@@ -66,11 +68,60 @@ def k_means(k=3):
     plt.show()
 
 def task3():
+    #TODO load data
+    files = load_and_join_data('./HMP_Dataset')
+    #TODO split data into test and training
+    #TODO build dictionary
+    #       cut signals into fixed size
+    #       clustering with kmeans
+    #classify new signal
+    #       cut signal into pieces
+    #       find closest cluster center from dictionary
+    #       build histogram of cluster centers
+    
     pass
+
+def load_and_join_data(parent_dir):
+    #get all files in the directory, excluding _MODEL directories
+    x = [os.path.join(r,file) for r,d,f in os.walk(parent_dir) for file in f]
+    # print(x)
+    #filter out files in 
+    trimmed = []
+    for path in x:
+        if path.find('_MODEL') >=0 :
+            continue
+        elif path.find('displayModel.m') >=0:
+            continue
+        elif path.find('displayTrial.m') >=0:
+            continue
+        elif path.find('MANUAL.txt') >=0:
+            continue
+        elif path.find('README.txt') >=0:
+            continue
+        else:
+            trimmed.append(path)
+    # print(trimmed)
+    data = []
+    # print("File {}".format(trimmed[0]))
+    # my_data = genfromtxt(trimmed[0], delimiter=' ')
+    #df = pd.read_csv(trimmed[0], header=None)
+    # data.append(my_data)
+    print(data)
+    for t in trimmed:
+        my_data = genfromtxt(t, delimiter=' ')
+        for line in my_data:
+            data.append(line)
+        # print("my_data.shape {}".format(np.asarray(my_data).shape))
+        #data.append(my_data)
+
+    print("data shape {}".format(np.asarray(data).shape))
+    print("data[0] {}".format(data[0]))
+    return data
+
 
 #main entry
 if __name__ == "__main__":
     print(" ##### AML HW4 Clusterererer  ##### ")
     # agg_clustering()
-    k_means()
+    # k_means()
     task3()
