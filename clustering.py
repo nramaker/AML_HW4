@@ -11,6 +11,9 @@ from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 
 seed = 42
+k = 14
+chunk_size = 32
+
 
 def load_data(file):
     print("Loading samples from file: {}".format(file))
@@ -67,6 +70,8 @@ def k_means(k=3):
 def task3():
     labels = list_labels()
     print("labels {}".format(labels))
+    print("")
+    print("###Loading Data set")
     dirs = list_dirs("./HMP_Dataset", labels)
     all_data = []
     for directory in dirs:
@@ -74,24 +79,50 @@ def task3():
         all_data.append(list(data))
     #split data into test and training
     train_X, test_X, train_Y, test_Y = test_train_split(all_data, labels, .20)
-    # print("train_X.shape {}".format(np.asarray(train_X).shape))
-    # print("test_X.shape {}".format(np.asarray(test_X).shape))
-    # print("train_Y.shape {}".format(np.asarray(train_Y).shape))
-    # print("test_Y.shape {}".format(np.asarray(test_Y).shape))
 
     print("train_X[0].shape {}".format(np.asarray(train_X[0]).shape))
     print("test_X[0].shape {}".format(np.asarray(test_X[0]).shape))
     print("train_Y[0].shape {}".format(np.asarray(train_Y[0]).shape))
     print("test_Y[0].shape {}".format(np.asarray(test_Y[0]).shape))
+    
     #TODO build dictionary
-    #       cut signals into fixed size
+    #cut signals into fixed size
+    # training_chunks = mass_chunkify(train_X, chunk_size=32)
+    # print("Training_chunks.shape {}".format(np.array(training_chunks).shape))
+    # print("Training_chunks[0] {}".format(np.array(training_chunks[0])))
+    
     #       clustering with kmeans
+    # print("Training KMeans Classifier")
+    #kmeans = KMeans(n_clusters=k, random_state=seed).fit(training_chunks)
+    kmeans = train_kmeans_classifier(train_X, k=k, chunk_size=chunk_size )
     #classify new signal
     #       cut signal into pieces
     #       find closest cluster center from dictionary
     #       build histogram of cluster centers
     
     pass
+
+def train_kmeans_classifier(data, k=3, chunk_size=32):
+    print("")
+    print("Training KMeans Clusterer k={}, chunk_size={}".format(k, chunk_size))
+    training_chunks = mass_chunkify(data, chunk_size=32)
+    # print("Training_chunks.shape {}".format(np.array(training_chunks).shape))
+    # print("Training_chunks[0] {}".format(np.array(training_chunks[0])))
+    
+    #       clustering with kmeans
+    print("Training KMeans")
+    kmeans = KMeans(n_clusters=k, random_state=seed).fit(training_chunks)
+    return kmeans
+
+def mass_chunkify(data, chunk_size=32):
+    print("")
+    print("Chunking data into chunks of size {}".format(chunk_size))
+    all_chunks = np.empty((0,chunk_size), int)
+    for obs_class in data:
+        chunks = chunkify(obs_class, chunk_size=chunk_size)
+        # print("About to concat : A.shape {} B.shape {}".format(np.asarray(all_chunks).shape, np.asarray(chunks).shape))
+        all_chunks = np.append(all_chunks, np.asarray(chunks), axis=0)
+    return all_chunks
 
 def chunkify(data, chunk_size=32):
     chunks = []
@@ -109,29 +140,24 @@ def chunkify(data, chunk_size=32):
     return chunks
 
 def test_train_split(data, labels, percent_test=.20):
+    print("")
+    print("### Splitting Data")
     train_data = []
     train_labels = []
     test_data = []
     test_labels = []
     for i in range(0, len(labels)):
-    #for i in range(0, 2):
         print("Splitting {} data into test/train, test split = {}".format(labels[i], percent_test))
         #construct labels
         X=data[i]
-        # print("X {}".format(X))
         y = [[]] * len(X)
         y[0].append(labels[i])
-        # print("y {}".format(y))
         #split into training and test
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=percent_test, random_state=seed)
-        # print("X_train {}".format(X_train))
         train_data.append(list(X_train))
         test_data.append(list(X_test))
         train_labels.append(list(y_train))
         test_labels.append(list(y_test)) 
-
-        # print("train_data[{}] {}".format(i, train_data[i]))
-        # print("train_labels[{}] {}".format(i, train_labels[i]))
 
     return train_data, test_data, train_labels, test_labels
 
@@ -150,7 +176,6 @@ def load_and_join_data(parent_dir):
     print("Loading data from {}".format(parent_dir))
     #get all files in the directory, excluding _MODEL directories
     x = [os.path.join(r,file) for r,d,f in os.walk(parent_dir) for file in f]
-    # print(x)
     #filter out files in 
     trimmed = []
     for path in x:
@@ -166,16 +191,11 @@ def load_and_join_data(parent_dir):
             continue
         else:
             trimmed.append(path)
-    # print(trimmed)
     data = []
-    # print(data)
     for t in trimmed:
         my_data = genfromtxt(t, delimiter=' ')
         for line in my_data:
             data.append(line)
-
-    # print("data shape {}".format(np.asarray(data).shape))
-    # print("data[0] {}".format(data[0]))
     return data
 
 
@@ -184,8 +204,8 @@ if __name__ == "__main__":
     print(" ##### AML HW4 Clusterererer  ##### ")
     # agg_clustering()
     # k_means()
-    # task3()
+    task3()
 
-    data = [ [1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
-    chunks = chunkify(data, chunk_size=5)
-    print(chunks)
+    # data = [ [1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+    # chunks = chunkify(data, chunk_size=5)
+    # print(chunks)
