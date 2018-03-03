@@ -10,49 +10,29 @@ from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 
 seed = 42
-k = 20
+k = 10
 chunk_size = 32
 
 def task3():
     labels = list_labels()
-    print("labels {}".format(labels))
+    # print("labels {}".format(labels))
     print("")
-    print("###Loading Data set")
+    print("### Loading Data set")
     dirs = list_dirs("./HMP_Dataset", labels)
 
-    # all_chunks = []
-    # all_labels = []
     sep_chunks = []
     sep_labels = []
     for i in range(0, len(dirs)):
         cls_chunks, cls_labels = load_chunk_and_label(dirs[i], labels[i], chunk_size=chunk_size)
         sep_chunks.append(cls_chunks)
         sep_labels.append(cls_labels)
-        # all_chunks = np.append(all_chunks, np.asarray(cls_chunks), axis=0)
-        # all_labels = np.append(all_labels, np.asarray(cls_labels), axis=0)
-
-    
-    # print("Combined chunks and labels.")
-    # print("all_chunks shape: {}".format(np.asarray(all_chunks).shape))
-    # print("all_labels shape: {}".format(np.asarray(all_labels).shape))
-    # print("sep_chunks shape: {}".format(np.asarray(sep_chunks).shape))
-    # print("sep_labels shape: {}".format(np.asarray(sep_labels).shape))
-
-    # print("")
-    # print("sep_chunks[0] shape: {}".format(np.asarray(sep_chunks[0]).shape))
-    # print("sep_chunks[0][0] shape: {}".format(np.asarray(sep_chunks[0][0]).shape))
-    # print("sep_labels[0][0] shape: {}".format(np.asarray(sep_labels[0][0]).shape))
-    # print("")
-    # print("sep_chunks[0][0]: {}".format(np.asarray(sep_chunks[0][0])))
-    # print("sep_labels[0][0]: {}".format(np.asarray(sep_labels[0][0])))
-
 
     train_X, test_X, train_Y, test_Y = test_train_split(sep_chunks, sep_labels, .20)
     
-    print("train_X.shape {}".format(np.asarray(train_X).shape))
-    print("test_X.shape {}".format(np.asarray(test_X).shape))
-    print("train_Y.shape {}".format(np.asarray(train_Y).shape))
-    print("test_Y.shape {}".format(np.asarray(test_Y).shape))
+    # print("train_X.shape {}".format(np.asarray(train_X).shape))
+    # print("test_X.shape {}".format(np.asarray(test_X).shape))
+    # print("train_Y.shape {}".format(np.asarray(train_Y).shape))
+    # print("test_Y.shape {}".format(np.asarray(test_Y).shape))
 
     combined_train_chunks = np.empty((0,chunk_size), int)
     combined_train_labels = []
@@ -61,20 +41,19 @@ def task3():
         combined_train_labels.append(train_Y[i])
 
     # print("")
-    print("train_X[0] {}".format(np.asarray(train_X[0]).shape))
-    print("train_Y[0] {}".format(np.asarray(train_Y[0]).shape))
+    # print("train_X[0] {}".format(np.asarray(train_X[0]).shape))
+    # print("train_Y[0] {}".format(np.asarray(train_Y[0]).shape))
     kmeans = train_kmeans_classifier(combined_train_chunks, k=k, chunk_size=chunk_size )
 
     #try to predict train_x[0]
-    print("Building Histograms for class {}".format(train_Y[0][0]))
-    histogram = predict_cluster_histogram(train_X[0], kmeans, k=k)
-    print("Finished")
-    #classify new signal
-    #       cut signal into pieces
-    #       find closest cluster center from dictionary
-    #       build histogram of cluster centers
+    # print("Building Histograms for class {}".format(train_Y[0]))
+    train_histograms = []
+    for i in range(0, len(train_X)):
+        histogram = predict_cluster_histogram(train_X[i], kmeans, k=k)
+        train_histograms.append(histogram)
     
-    pass
+    print("Finished Creating Histograms on Training Data")
+    print("train_histograms.shape {}".format(np.asarray(train_histograms).shape))
 
 def build_all_hisitograms(chunks, labels, ):
     pass
@@ -92,22 +71,16 @@ def load_chunk_and_label(directory, label, chunk_size=32):
     return all_chunks, all_labels
 
 def predict_cluster_histogram(chunks, clusterer, k=14):
-    histogram = np.empty(k, int)
+    histogram = np.zeros(k, int)
     predictions = clusterer.predict(np.asarray(chunks))
-    # print("Predictions {} {}".format(np.asarray(predictions).shape, predictions))
-    # print("P2 {} {}".format(p2.shape, p2))
     for pred in predictions:
         histogram[pred] = histogram[pred]+1
-    print(histogram)
+    # print("Histogram {}".format(histogram))
     return histogram
 
 def train_kmeans_classifier(data, k=3, chunk_size=32):
-    print("")
-    print("Training KMeans Clusterer k={}, chunk_size={}".format(k, chunk_size))
-    # training_chunks = mass_chunkify(data, chunk_size=32)
-    
-    #       clustering with kmeans
-    print("Training KMeans")
+
+    print("### Training KMeans Clusterer k={}, chunk_size={}".format(k, chunk_size))
     kmeans = KMeans(n_clusters=k, random_state=seed).fit(data)
     return kmeans
 
@@ -127,32 +100,14 @@ def chunkify(data, chunk_size=32):
     return chunks
 
 def test_train_split(data, labels, percent_test=.20):
-    print("")
     print("### Splitting Data")
     X = []
     Y = []
-    print("Labels length {}".format(len(labels)))
+    # print("Labels length {}".format(len(labels)))
     #first join data from every category
-    for i in range(0, 2):
-    # for i in range(0, len(labels)):
-        # print("Splitting {} data into test/train, test split = {}".format(labels[i], percent_test))
-        print("")
-        print("Combining X.shape {} with data[i].shape {}".format(np.asarray(X).shape, np.asarray(data[i]).shape))
+    for i in range(0, len(labels)):
         X.extend(data[i])
-        print("New shape {}".format(np.asarray(X).shape))
-        print("Combining Y.shape {} with labels[i].shape {}".format(np.asarray(Y).shape, np.asarray(labels[i]).shape))
         Y.extend(labels[i])
-        print("New shape {}".format(np.asarray(Y).shape))
-
-    print("After joining all data, X.shape {}".format(np.asarray(X).shape))
-    print("After joining all data, Y.shape {}".format(np.asarray(Y).shape))
-    # print("After joining all data, X[0].shape {}".format(np.asarray(X[0]).shape))
-    # print("After joining all data, Y[0].shape {}".format(np.asarray(Y[0]).shape))
-
-    # print("")
-    # print(X[0])
-
-
     #split once 
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=percent_test, random_state=seed)
     return X_train, X_test, y_train, y_test
