@@ -6,12 +6,15 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.metrics import euclidean_distances
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 
 from matplotlib import pyplot as plt
 
 seed = 42
 k = 10
 chunk_size = 32
+trees =30
+depth =16 
 
 def task3():
     labels = list_labels()
@@ -20,14 +23,46 @@ def task3():
     print("### Loading Data set")
     dirs = list_dirs("./HMP_Dataset", labels)
 
-    sep_chunks = []
-    sep_labels = []
+    training_acc, test_acc = full_test(dirs, labels, chunk_size=chunk_size, k=k, tree_count=trees, tree_depth=depth)
+
+    # chunks = []
+    # chunk_labels = []
+    # for i in range(0, len(dirs)):
+    #     cls_chunks, cls_labels = load_chunk_and_label(dirs[i], labels[i], chunk_size=chunk_size)
+    #     chunks.append(cls_chunks)
+    #     chunk_labels.append(cls_labels)
+
+    # train_X, test_X, train_Y, test_Y = test_train_split(chunks, chunk_labels, .20)
+    
+    # combined_train_chunks = np.empty((0,chunk_size), int)
+    # combined_train_labels = []
+    # for i in range(0, len(train_X)):
+    #     combined_train_chunks = np.append(combined_train_chunks, np.asarray(train_X[i]), axis=0)
+    #     combined_train_labels.append(train_Y[i])
+
+    # kmeans = train_kmeans_classifier(combined_train_chunks, k=k, chunk_size=chunk_size )
+
+    # train_histograms = build_histograms(train_X, kmeans, k)
+
+    # classifier = fit_rand_forrest_classifier(train_histograms, np.asarray(train_Y), trees=trees, depth=depth)
+    # training_accuracy = rf_predict_and_measure(classifier, train_histograms, np.asarray(train_Y), "Training Predictions")
+    # print(training_accuracy)
+
+    # test_histograms = build_histograms(test_X, kmeans, k)
+    # testing_accuracy = rf_predict_and_measure(classifier, test_histograms, test_Y, "Testing Accuracy")
+    # print(testing_accuracy)
+
+    print("Finished")
+
+def full_test(dirs, labels, chunk_size=32, k=20, tree_count=30, tree_depth=16 ):
+    chunks = []
+    chunk_labels = []
     for i in range(0, len(dirs)):
         cls_chunks, cls_labels = load_chunk_and_label(dirs[i], labels[i], chunk_size=chunk_size)
-        sep_chunks.append(cls_chunks)
-        sep_labels.append(cls_labels)
+        chunks.append(cls_chunks)
+        chunk_labels.append(cls_labels)
 
-    train_X, test_X, train_Y, test_Y = test_train_split(sep_chunks, sep_labels, .20)
+    train_X, test_X, train_Y, test_Y = test_train_split(chunks, chunk_labels, .20)
     
     combined_train_chunks = np.empty((0,chunk_size), int)
     combined_train_labels = []
@@ -38,9 +73,33 @@ def task3():
     kmeans = train_kmeans_classifier(combined_train_chunks, k=k, chunk_size=chunk_size )
 
     train_histograms = build_histograms(train_X, kmeans, k)
-    
-    print("Finished Creating Histograms on Training Data")
-    print("train_histograms.shape {}".format(np.asarray(train_histograms).shape))
+
+    classifier = fit_rand_forrest_classifier(train_histograms, np.asarray(train_Y), trees=trees, depth=depth)
+    training_accuracy = rf_predict_and_measure(classifier, train_histograms, np.asarray(train_Y), "Training Predictions")
+    print(training_accuracy)
+
+    test_histograms = build_histograms(test_X, kmeans, k)
+    testing_accuracy = rf_predict_and_measure(classifier, test_histograms, test_Y, "Testing Accuracy")
+    print(testing_accuracy)
+    return training_accuracy, testing_accuracy
+
+def fit_rand_forrest_classifier(features, labels, trees, depth):
+    print("### Fitting RandomForestClassifier with depth={}, trees={} on {} features and {} labels.".format(depth, trees, np.asarray(features).shape, np.asarray(labels).shape))
+    rfc = RandomForestClassifier(max_depth=depth, n_estimators=trees)
+    return rfc.fit(features,labels.ravel())
+
+def rf_predict_and_measure(classifier, features, truths, description):
+    predictions = classifier.predict(features)
+    accurracy = calculate_accuracy(predictions, truths, description)
+    tup = (description, accurracy)
+    return tup
+
+def calculate_accuracy(predictions, truth, name):
+    total = len(predictions)
+    #print("Calculating accurracy on {} predictions using {}.".format(total, name))
+    right = np.count_nonzero(predictions==truth)
+    #print("We made {} correct predictions.".format(right))
+    return float(right)/total
 
 def build_histograms(data, clusterer, k):
     histograms = []
