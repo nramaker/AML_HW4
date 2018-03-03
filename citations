@@ -9,6 +9,8 @@ getting list of files in a directory - https://stackoverflow.com/questions/32072
 get from text file with numpy- https://stackoverflow.com/questions/3518778/how-to-read-csv-into-record-array-in-numpy
 train test split - http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 array initilization with strings
+array extend https://stackoverflow.com/questions/3748063/what-is-the-syntax-to-insert-one-list-into-another-list-in-python
+
 
 Part 3 assignment - Obtain the activities of daily life dataset from the UC Irvine machine learning
 website (https://archive.ics.uci.edu/ml/datasets/Dataset+for+ADL+Recognition+with+Wrist-worn+Accelerometer
