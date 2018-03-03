@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 
 seed = 42
-k = 14
+k = 20
 chunk_size = 32
 
 def task3():
@@ -65,12 +65,10 @@ def task3():
     print("train_Y[0] {}".format(np.asarray(train_Y[0]).shape))
     kmeans = train_kmeans_classifier(combined_train_chunks, k=k, chunk_size=chunk_size )
 
-    
-    
     #try to predict train_x[0]
-    # print("Building Histograms for class {}".format(train_Y[0][0]))
-    # histograms = predict_cluster_histogram(train_X[0], kmeans, chunk_size=chunk_size, k=k)
-    # print("Finished")
+    print("Building Histograms for class {}".format(train_Y[0][0]))
+    histogram = predict_cluster_histogram(train_X[0], kmeans, k=k)
+    print("Finished")
     #classify new signal
     #       cut signal into pieces
     #       find closest cluster center from dictionary
@@ -96,7 +94,7 @@ def load_chunk_and_label(directory, label, chunk_size=32):
 def predict_cluster_histogram(chunks, clusterer, k=14):
     histogram = np.empty(k, int)
     predictions = clusterer.predict(np.asarray(chunks))
-    print("Predictions {} {}".format(np.asarray(predictions).shape, predictions))
+    # print("Predictions {} {}".format(np.asarray(predictions).shape, predictions))
     # print("P2 {} {}".format(p2.shape, p2))
     for pred in predictions:
         histogram[pred] = histogram[pred]+1
