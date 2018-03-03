@@ -19,50 +19,51 @@ def task3():
     print("")
     print("###Loading Data set")
     dirs = list_dirs("./HMP_Dataset", labels)
-    #TODO stop doing this load
-    #TODO train kmeans from other loaded data
-    # all_data = []
-    # for directory in dirs:
-    #     data = load_and_join_data(directory)
-    #     all_data.append(list(data))
-    # #split data into test and training
-    # train_X, test_X, train_Y, test_Y = test_train_split(all_data, labels, .20)
 
-    # print("train_X[0].shape {}".format(np.asarray(train_X[0]).shape))
-    # print("test_X[0].shape {}".format(np.asarray(test_X[0]).shape))
-    # print("train_Y[0].shape {}".format(np.asarray(train_Y[0]).shape))
-    # print("test_Y[0].shape {}".format(np.asarray(test_Y[0]).shape))
-    
-    # kmeans = train_kmeans_classifier(train_X, k=k, chunk_size=chunk_size )
-
-
-    all_chunks = []
-    all_labels = []
+    # all_chunks = []
+    # all_labels = []
+    sep_chunks = []
+    sep_labels = []
     for i in range(0, len(dirs)):
         cls_chunks, cls_labels = load_chunk_and_label(dirs[i], labels[i], chunk_size=chunk_size)
-        all_chunks = np.append(all_chunks, np.asarray(cls_chunks), axis=0)
-        all_labels = np.append(all_labels, np.asarray(cls_chunks), axis=0)
-        # all_chunks.append(bt_chunks)
-        # all_labels.append(bt_labels)
-        # print("")
-        # print("label: {}".format(labels[i]))
-        # print("chunks shape: {}".format(np.asarray(bt_chunks).shape))
-        # print("labels shape: {}".format(np.asarray(bt_labels).shape))
-    
-    print("Combined chunks and labels.")
-    print("chunks shape: {}".format(np.asarray(all_chunks).shape))
-    print("labels shape: {}".format(np.asarray(all_labels).shape))
+        sep_chunks.append(cls_chunks)
+        sep_labels.append(cls_labels)
+        # all_chunks = np.append(all_chunks, np.asarray(cls_chunks), axis=0)
+        # all_labels = np.append(all_labels, np.asarray(cls_labels), axis=0)
 
-    train_X, test_X, train_Y, test_Y = test_train_split(all_chunks, all_labels, .20)
+    
+    # print("Combined chunks and labels.")
+    # print("all_chunks shape: {}".format(np.asarray(all_chunks).shape))
+    # print("all_labels shape: {}".format(np.asarray(all_labels).shape))
+    # print("sep_chunks shape: {}".format(np.asarray(sep_chunks).shape))
+    # print("sep_labels shape: {}".format(np.asarray(sep_labels).shape))
+
+    # print("")
+    # print("sep_chunks[0] shape: {}".format(np.asarray(sep_chunks[0]).shape))
+    # print("sep_chunks[0][0] shape: {}".format(np.asarray(sep_chunks[0][0]).shape))
+    # print("sep_labels[0][0] shape: {}".format(np.asarray(sep_labels[0][0]).shape))
+    # print("")
+    # print("sep_chunks[0][0]: {}".format(np.asarray(sep_chunks[0][0])))
+    # print("sep_labels[0][0]: {}".format(np.asarray(sep_labels[0][0])))
+
+
+    train_X, test_X, train_Y, test_Y = test_train_split(sep_chunks, sep_labels, .20)
     
     print("train_X.shape {}".format(np.asarray(train_X).shape))
     print("test_X.shape {}".format(np.asarray(test_X).shape))
     print("train_Y.shape {}".format(np.asarray(train_Y).shape))
     print("test_Y.shape {}".format(np.asarray(test_Y).shape))
 
-    print("")
-    print("train_X[0] {}".format(train_X[0]))
-    kmeans = train_kmeans_classifier(train_X, k=k, chunk_size=chunk_size )
+    combined_train_chunks = np.empty((0,chunk_size), int)
+    combined_train_labels = []
+    for i in range(0, len(train_X)):
+        combined_train_chunks = np.append(combined_train_chunks, np.asarray(train_X[i]), axis=0)
+        combined_train_labels.append(train_Y[i])
+
+    # print("")
+    print("train_X[0] {}".format(np.asarray(train_X[0]).shape))
+    print("train_Y[0] {}".format(np.asarray(train_Y[0]).shape))
+    kmeans = train_kmeans_classifier(combined_train_chunks, k=k, chunk_size=chunk_size )
 
     
     
@@ -111,15 +112,6 @@ def train_kmeans_classifier(data, k=3, chunk_size=32):
     print("Training KMeans")
     kmeans = KMeans(n_clusters=k, random_state=seed).fit(data)
     return kmeans
-
-# def mass_chunkify(data, chunk_size=32):
-#     print("")
-#     print("Chunking data into chunks of size {}".format(chunk_size))
-#     all_chunks = np.empty((0,chunk_size), int)
-#     for obs_class in data:
-#         chunks = chunkify(obs_class, chunk_size=chunk_size)
-#         all_chunks = np.append(all_chunks, np.asarray(chunks), axis=0)
-#     return all_chunks
 
 def chunkify(data, chunk_size=32):
     chunks = []
