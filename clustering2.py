@@ -19,6 +19,8 @@ def task3():
     print("")
     print("###Loading Data set")
     dirs = list_dirs("./HMP_Dataset", labels)
+    #TODO stop doing this load
+    #TODO train kmeans from other loaded data
     all_data = []
     for directory in dirs:
         data = load_and_join_data(directory)
@@ -26,13 +28,31 @@ def task3():
     #split data into test and training
     train_X, test_X, train_Y, test_Y = test_train_split(all_data, labels, .20)
 
-    print("train_X[0].shape {}".format(np.asarray(train_X[0]).shape))
-    print("test_X[0].shape {}".format(np.asarray(test_X[0]).shape))
-    print("train_Y[0].shape {}".format(np.asarray(train_Y[0]).shape))
-    print("test_Y[0].shape {}".format(np.asarray(test_Y[0]).shape))
+    # print("train_X[0].shape {}".format(np.asarray(train_X[0]).shape))
+    # print("test_X[0].shape {}".format(np.asarray(test_X[0]).shape))
+    # print("train_Y[0].shape {}".format(np.asarray(train_Y[0]).shape))
+    # print("test_Y[0].shape {}".format(np.asarray(test_Y[0]).shape))
     
     kmeans = train_kmeans_classifier(train_X, k=k, chunk_size=chunk_size )
+
+
+    all_chunks = []
+    all_labels = []
+    for i in range(0, len(dirs)):
+        bt_chunks, bt_labels = load_chunk_and_label(dirs[i], labels[i], chunk_size=chunk_size)
+        all_chunks.append(list(bt_chunks))
+        all_labels.append(list(bt_labels))
+        print("")
+        print("label: {}".format(labels[i]))
+        print("chunks shape: {}".format(np.asarray(bt_chunks).shape))
+        print("labels shape: {}".format(np.asarray(bt_labels).shape))
+
     
+    
+    #try to predict train_x[0]
+    # print("Building Histograms for class {}".format(train_Y[0][0]))
+    # histograms = predict_cluster_histogram(train_X[0], kmeans, chunk_size=chunk_size, k=k)
+    # print("Finished")
     #classify new signal
     #       cut signal into pieces
     #       find closest cluster center from dictionary
@@ -40,16 +60,35 @@ def task3():
     
     pass
 
-def predict_cluster_histograms(data, chunk_size=32, k=14):
-    histograms = []
-    return histograms
+def build_all_hisitograms(chunks, labels, ):
+    pass
+
+def load_chunk_and_label(directory, label, chunk_size=32):
+    all_chunks = []
+    all_labels = []
+    files = list_files(directory)
+    for f in files:
+        # print("Loading and chunking data from {}".format(f))
+        data = genfromtxt(f, delimiter=' ')
+        data = chunkify(data, chunk_size=chunk_size)
+        all_chunks.append(list(data))
+        all_labels.append(label)
+    return all_chunks, all_labels
+
+def predict_cluster_histogram(chunks, clusterer, k=14):
+    histogram = np.empty(k, int)
+    predictions = clusterer.predict(np.asarray(chunks))
+    print("Predictions {} {}".format(np.asarray(predictions).shape, predictions))
+    # print("P2 {} {}".format(p2.shape, p2))
+    for pred in predictions:
+        histogram[pred] = histogram[pred]+1
+    print(histogram)
+    return histogram
 
 def train_kmeans_classifier(data, k=3, chunk_size=32):
     print("")
     print("Training KMeans Clusterer k={}, chunk_size={}".format(k, chunk_size))
     training_chunks = mass_chunkify(data, chunk_size=32)
-    # print("Training_chunks.shape {}".format(np.array(training_chunks).shape))
-    # print("Training_chunks[0] {}".format(np.array(training_chunks[0])))
     
     #       clustering with kmeans
     print("Training KMeans")
@@ -62,7 +101,6 @@ def mass_chunkify(data, chunk_size=32):
     all_chunks = np.empty((0,chunk_size), int)
     for obs_class in data:
         chunks = chunkify(obs_class, chunk_size=chunk_size)
-        # print("About to concat : A.shape {} B.shape {}".format(np.asarray(all_chunks).shape, np.asarray(chunks).shape))
         all_chunks = np.append(all_chunks, np.asarray(chunks), axis=0)
     return all_chunks
 
@@ -115,11 +153,19 @@ def list_dirs(parent_dir, labels):
     return dirs
 
 def load_and_join_data(parent_dir):
-    print("Loading data from {}".format(parent_dir))
+    trimmed = list_files(parent_dir)
+    data = []
+    for t in trimmed:
+        my_data = genfromtxt(t, delimiter=' ')
+        for line in my_data:
+            data.append(line)
+    return data
+
+def list_files(parent_dir):
+    files = []
     #get all files in the directory, excluding _MODEL directories
     x = [os.path.join(r,file) for r,d,f in os.walk(parent_dir) for file in f]
     #filter out files in 
-    trimmed = []
     for path in x:
         if path.find('_MODEL') >=0 :
             continue
@@ -132,13 +178,8 @@ def load_and_join_data(parent_dir):
         elif path.find('README.txt') >=0:
             continue
         else:
-            trimmed.append(path)
-    data = []
-    for t in trimmed:
-        my_data = genfromtxt(t, delimiter=' ')
-        for line in my_data:
-            data.append(line)
-    return data
+            files.append(path)
+    return files
 
 #main entry
 if __name__ == "__main__":
