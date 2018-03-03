@@ -29,34 +29,25 @@ def task3():
 
     train_X, test_X, train_Y, test_Y = test_train_split(sep_chunks, sep_labels, .20)
     
-    # print("train_X.shape {}".format(np.asarray(train_X).shape))
-    # print("test_X.shape {}".format(np.asarray(test_X).shape))
-    # print("train_Y.shape {}".format(np.asarray(train_Y).shape))
-    # print("test_Y.shape {}".format(np.asarray(test_Y).shape))
-
     combined_train_chunks = np.empty((0,chunk_size), int)
     combined_train_labels = []
     for i in range(0, len(train_X)):
         combined_train_chunks = np.append(combined_train_chunks, np.asarray(train_X[i]), axis=0)
         combined_train_labels.append(train_Y[i])
 
-    # print("")
-    # print("train_X[0] {}".format(np.asarray(train_X[0]).shape))
-    # print("train_Y[0] {}".format(np.asarray(train_Y[0]).shape))
     kmeans = train_kmeans_classifier(combined_train_chunks, k=k, chunk_size=chunk_size )
 
-    #try to predict train_x[0]
-    # print("Building Histograms for class {}".format(train_Y[0]))
-    train_histograms = []
-    for i in range(0, len(train_X)):
-        histogram = predict_cluster_histogram(train_X[i], kmeans, k=k)
-        train_histograms.append(histogram)
+    train_histograms = build_histograms(train_X, kmeans, k)
     
     print("Finished Creating Histograms on Training Data")
     print("train_histograms.shape {}".format(np.asarray(train_histograms).shape))
 
-def build_all_hisitograms(chunks, labels, ):
-    pass
+def build_histograms(data, clusterer, k):
+    histograms = []
+    for i in range(0, len(data)):
+        histogram = predict_cluster_histogram(data[i], clusterer, k=k)
+        histograms.append(histogram)
+    return histograms
 
 def load_chunk_and_label(directory, label, chunk_size=32):
     all_chunks = []
@@ -75,7 +66,6 @@ def predict_cluster_histogram(chunks, clusterer, k=14):
     predictions = clusterer.predict(np.asarray(chunks))
     for pred in predictions:
         histogram[pred] = histogram[pred]+1
-    # print("Histogram {}".format(histogram))
     return histogram
 
 def train_kmeans_classifier(data, k=3, chunk_size=32):
