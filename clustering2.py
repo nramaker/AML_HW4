@@ -7,6 +7,8 @@ from sklearn.metrics import euclidean_distances
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+import itertools
 
 from matplotlib import pyplot as plt
 
@@ -25,13 +27,37 @@ def task3():
     training_accs = []
     test_accs = []
     for k_value in range(1,11):
-        training_acc, test_acc = full_test(dirs, labels, chunk_size=32, k=k_value*2, tree_count=trees, tree_depth=depth)
-        ks.append(k_value*2)
-        sizes.append(32)
+        training_acc, test_acc = full_test(dirs, labels, chunk_size=chunk_size, k=k_value*3, tree_count=trees, tree_depth=depth)
+        ks.append(k_value*3)
+        sizes.append(chunk_size)
         training_accs.append(training_acc)
         test_accs.append(test_accs)
-        print("For k={}, chunksize={}: {} {}".format(k_value*2, 32, training_acc, test_acc))
+        print("For k={}, chunksize={}: {} {}".format(k_value*3, chunk_size, training_acc, test_acc))
     print("Finished")
+
+def create_conf_matrix(predictions, truths, classes, title):
+    cm = confusion_matrix(predictions, truths)
+    np.set_printoptions(precision=2)
+    
+    plt.figure(figsize=(8, 8))
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
 
 def full_test(dirs, labels, chunk_size=32, k=20, tree_count=30, tree_depth=16 ):
     # print("### Full Test chunk_size={}, k={}, tree_count={} tree_depth={}".format(chunk_size, k, tree_count,tree_depth))
@@ -55,10 +81,12 @@ def full_test(dirs, labels, chunk_size=32, k=20, tree_count=30, tree_depth=16 ):
     train_histograms = build_histograms(train_X, kmeans, k)
 
     classifier = fit_rand_forrest_classifier(train_histograms, np.asarray(train_Y), trees=trees, depth=depth)
-    training_accuracy = rf_predict_and_measure(classifier, train_histograms, np.asarray(train_Y), "Training Accuracy")
+    training_accuracy, train_pred = rf_predict_and_measure(classifier, train_histograms, np.asarray(train_Y), "Training Accuracy")
+    # create_conf_matrix(train_pred, train_Y, labels, 'TRAINING matrix, k={}, chunk_size={}'.format(k, chunk_size))
 
     test_histograms = build_histograms(test_X, kmeans, k)
-    testing_accuracy = rf_predict_and_measure(classifier, test_histograms, test_Y, "Testing Accuracy")
+    testing_accuracy, test_preds = rf_predict_and_measure(classifier, test_histograms, test_Y, "Testing Accuracy")
+    create_conf_matrix(test_preds,test_Y, labels, 'TESTING accuracy={}, k={}, chunk_size={}'.format(testing_accuracy[1],k, chunk_size))
     return training_accuracy, testing_accuracy
 
 def fit_rand_forrest_classifier(features, labels, trees, depth):
@@ -70,7 +98,7 @@ def rf_predict_and_measure(classifier, features, truths, description):
     predictions = classifier.predict(features)
     accurracy = calculate_accuracy(predictions, truths, description)
     tup = (description, accurracy)
-    return tup
+    return tup, predictions
 
 def calculate_accuracy(predictions, truth, name):
     total = len(predictions)
